@@ -26,7 +26,6 @@ const clerkWebhooks = async (req, res) => {
                     email: data.email_addresses?.[0]?.email_address || "", // safe fallback
                     photo: data.image_url,
                     firstName: data.first_name,
-                    lastName: data.last_name,
                 };
                 const existingUser = await userModel.findOne({ clerkId: data.id });
                 if (existingUser) {
@@ -47,7 +46,7 @@ const clerkWebhooks = async (req, res) => {
                     email: data.email_addresses?.[0]?.email_address || "", // safe fallback
                     photo: data.image_url,
                     firstName: data.first_name,
-                    lastName: data.last_name,
+                 
                 };
                 await userModel.findOneAndUpdate({ clerkId: data.id }, userData);
                 res.json({});
