@@ -36,6 +36,8 @@ const clerkWebhooks = async (req, res) => {
                 try {
                     await userModel.create(userData);
                     console.log(" User created successfully");
+                    res.json({ success: true, user: userData })
+
                 } catch (err) {
                     console.error(" Error creating user:", err.message);
                 }
@@ -47,22 +49,38 @@ const clerkWebhooks = async (req, res) => {
                     email: data.email_addresses?.[0]?.email_address || "",
                     photo: data.image_url,
                     firstName: data.first_name || '',
-                    lastName: data.last_name || '',   
+                    lastName: data.last_name || '',
                 };
                 await userModel.findOneAndUpdate({ clerkId: data.id }, userData);
-                res.json({});
+                res.json({ success: true, message: "User updated successfuly" });
+
                 break;
             }
             case "user.deleted": {
                 await userModel.findOneAndDelete({ clerkId: data.id });
-                res.json({});
+                res.json({ success: true, message: "User Deleted successfuly" });
                 break;
             }
         }
-        
+
     } catch (error) {
         console.log(error.message);
-        res.json({});
+        res.json({ success: false, message: error.message });
     }
 }
-export { clerkWebhooks };
+
+//api controller function to get  the user data
+const userCredits = async (req, res) => {
+    try {
+        const {clerkId}=req.body;
+        const userData =await userModel.findOne({clerkId})
+        res.json({success:true,credits:userData.creditBalance});
+
+    } catch (error) {
+        console.log(error.message);
+        res.json({ success: false, message: error.message });
+    }
+}
+
+
+export { clerkWebhooks,userCredits };
