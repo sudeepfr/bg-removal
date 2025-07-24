@@ -4,15 +4,21 @@ import userModel from "../models/userModel.js";
 
 const clerkWebhooks = async (req, res) => {
     try {
+        console.log("🔥 Webhook hit!");
         //create svix instance with clerk webhook secret
         const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET)
-        await whook.verify(JSON.stringify(req.body), {
+
+        const payload = req.body.toString();
+
+        const headers = {
             "svix-id": req.headers["svix-id"],
             "svix-timestamp": req.headers["svix-timestamp"],
             "svix-signature": req.headers["svix-signature"]
-        });
+        };
+        const evt = whook.verify(payload, headers);
 
-        const { data, type } = req.body;
+        const { data, type } = evt;
+        console.log("📦 Webhook type:", type);
         switch (type) {
             case "user.created": {
                 const userData = {
@@ -22,8 +28,17 @@ const clerkWebhooks = async (req, res) => {
                     firstName: data.first_name,
                     lastName: data.last_name,
                 }
-                await userModel.create(userData);
-                res.json({});
+                const existingUser = await userModel.findOne({ clerkId: data.id });
+                if (existingUser) {
+                    console.log("👀 User already exists:", existingUser.email);
+                    break;
+                }
+                try {
+                    await userModel.create(userData);
+                    console.log("🧑 User created successfully");
+                } catch (err) {
+                    console.error("❌ Error creating user:", err.message);
+                }
                 break;
 
             }
@@ -45,8 +60,8 @@ const clerkWebhooks = async (req, res) => {
             }
         }
     } catch (error) {
-         console.log(error);
-         res.json({});
+        console.log(error.message);
+        res.json({});
     }
 }
 export { clerkWebhooks };
