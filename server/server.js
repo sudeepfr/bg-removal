@@ -10,8 +10,8 @@ const PORT =process.env.PORT ||4000;
 const app=express();
 await connectDB();
 app.use(cors({
-  origin: 'http://localhost:5173', // or your deployed frontend URL
-  credentials: true // if you're using cookies or auth headers
+  origin: 'https://bg-removal-front-omega.vercel.app/', //  deployed frontend URL
+  credentials: true 
 }));
 app.use(express.json());
 
