@@ -9,7 +9,10 @@ import imageRouter from './routes/imageRoutes.js';
 const PORT =process.env.PORT ||4000;
 const app=express();
 await connectDB();
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', // or your deployed frontend URL
+  credentials: true // if you're using cookies or auth headers
+}));
 app.use(express.json());
 
 app.use('/api/user',userRouter);
