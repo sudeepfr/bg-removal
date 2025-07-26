@@ -32,12 +32,12 @@ const clerkWebhooks = async (req, res) => {
                 const existingUser = await userModel.findOne({ clerkId: data.id });
                 if (existingUser) {
                     console.log("User already exists:", existingUser.email);
-                    break;
+                    return res.status(200).json({ success: true, message: "User already exists" });
                 }
                 try {
                     await userModel.create(userData);
                     console.log(" User created successfully");
-                    res.json({ success: true, user: userData })
+                  return  res.json({ success: true, user: userData })
 
                 } catch (err) {
                     console.error(" Error creating user:", err.message);
