@@ -23,6 +23,7 @@ const clerkWebhooks = async (req, res) => {
 
         switch (type) {
             case "user.created": {
+                console.log("📦 Full user.created payload:", JSON.stringify(data, null, 2));
                 const email =
                     data.email_addresses &&
                         data.email_addresses.length > 0 &&
