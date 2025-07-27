@@ -9,7 +9,7 @@ const authUser = async (req, res, next) => {
             return res.json({ success: false, message: 'Not Authorized login again' })
         }
         const token_decode=jwt.decode(token);
-        // req.body.clerkId=token_decode.clerkId;
+      
          req.clerkId = token_decode.sub;
         next();
 
