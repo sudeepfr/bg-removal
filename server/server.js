@@ -11,7 +11,10 @@ import bodyParser from 'body-parser';
 const PORT =process.env.PORT ||4000;
 const app=express();
 await connectDB(); 
-app.use(cors());
+app.use(cors({
+  origin: 'https://bg-removal-omega-two.vercel.app', 
+  credentials: true 
+}));
 
 
 app.use(express.json());
