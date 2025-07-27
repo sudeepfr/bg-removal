@@ -4,6 +4,7 @@ import cors from 'cors';
 import connectDB from './configs/mongodb.js';
 import userRouter from './routes/userRoutes.js';
 import imageRouter from './routes/imageRoutes.js';
+import { clerkWebhooks } from './controllers/userController.js';
   
 
 const PORT =process.env.PORT ||4000;
@@ -14,7 +15,8 @@ app.use(cors({
   credentials: true 
 }));
 
-app.post('/api/user/webhooks', express.raw({ type: 'application/json' }), clerkWebhooks);app.use(express.json());
+app.post('/api/user/webhooks', express.raw({ type: 'application/json' }), clerkWebhooks);
+app.use(express.json());
 
 app.use('/api/user',userRouter);
 app.use('/api/image',imageRouter);
