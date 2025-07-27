@@ -10,24 +10,20 @@ import bodyParser from 'body-parser';
 
 const PORT =process.env.PORT ||4000;
 const app=express();
-await connectDB();
+await connectDB(); 
 app.use(cors({
   origin: 'http://localhost:5173', 
   credentials: true 
 }));
 
-app.post(
-  '/api/user/webhooks',
-  bodyParser.raw({ type: 'application/json' }), 
-  clerkWebhooks
-);
+
 app.use(express.json());
+app.get('/',(req,res)=>res.send("Api is running..."))
 
 app.use('/api/user',userRouter);
 app.use('/api/image',imageRouter);
 
 
-app.get('/',(req,res)=>res.send("Api is running..."))
 
 app.listen(PORT,()=>{
      console.log("server running on port "+PORT);
