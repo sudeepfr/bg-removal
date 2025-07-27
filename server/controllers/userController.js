@@ -59,8 +59,8 @@ const clerkWebhooks = async (req, res) => {
 const userCredits = async (req, res) => {
     try {
         const clerkId = req.clerkId;
+        console.log(clerkId);
         const userData = await userModel.findOne({ clerkId })
-        console.log(userData)
         res.json({ success: true, credits: userData.creditBalance });
 
     } catch (error) {
@@ -128,7 +128,7 @@ const paymentRazorpay = async (req, res) => {
         const options = {
             amount: amount * 100,
             currency: process.env.currency,
-            receipt: newTransaction._id,
+            receipt: newTransaction._id.toString(),
         }
 
         await razorpayInstance.orders.create(options, (error, order) => {
