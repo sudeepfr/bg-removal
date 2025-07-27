@@ -15,7 +15,7 @@ app.use(cors({
   credentials: true 
 }));
 
-app.post('/api/user/webhooks', express.raw({ type: 'application/json' }), clerkWebhooks);
+
 app.use(express.json());
 
 app.use('/api/user',userRouter);
