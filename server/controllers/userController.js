@@ -24,7 +24,7 @@ const clerkWebhooks = async (req, res) => {
         switch (type) {
             case "user.created": {
                 console.log("📦 Full user.created payload:", JSON.stringify(data, null, 2));
-               const email = data.email_addresses?.[0]?.email_address || null;
+               const email = data.email_addresses[0].email_address||" ";
                console.log(email);
                 if (!email) {
                     console.error(" Email not found in Clerk webhook payload");
