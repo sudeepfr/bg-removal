@@ -5,6 +5,7 @@ import connectDB from './configs/mongodb.js';
 import userRouter from './routes/userRoutes.js';
 import imageRouter from './routes/imageRoutes.js';
 import { clerkWebhooks } from './controllers/userController.js';
+import bodyParser from 'body-parser';
   
 
 const PORT =process.env.PORT ||4000;
