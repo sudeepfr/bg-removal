@@ -5,7 +5,7 @@ import razorpay from 'razorpay';
 import transactionModel from "../models/transactionModel.js";
 const clerkWebhooks = async (req, res) => {
     try {
-        console.log("Webhook hit!");
+        console.log("Webhook hit!", req.headers);
         //create svix instance with clerk webhook secret
         const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET)
 
