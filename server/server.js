@@ -18,7 +18,7 @@ app.use(cors({
 
 app.post(
   '/api/user/webhooks',
-  bodyParser.raw({ type: 'application/json' }), // ← MUST be raw
+  bodyParser.raw({ type: 'application/json' }), 
   clerkWebhooks
 );
 app.use(express.json());

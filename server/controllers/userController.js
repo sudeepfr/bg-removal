@@ -17,15 +17,31 @@ const clerkWebhooks = async (req, res) => {
             "svix-signature": req.headers["svix-signature"]
         };
         const evt = whook.verify(payload, headers);
-        
+
         const { data, type } = evt;
-        console.log("✅ Webhook type:", type);
+        console.log(" Webhook type:", type);
 
         switch (type) {
             case "user.created": {
+                const email =
+                    data.email_addresses &&
+                        data.email_addresses.length > 0 &&
+                        data.email_addresses[0].email_address
+                        ? data.email_addresses[0].email_address
+                        : null;
+
+                if (!email) {
+                    console.error(" Email not found in Clerk webhook payload");
+                    return res.status(400).json({
+                        success: false,
+                        message: "Email address not found in webhook payload",
+                    });
+                }
+
+
                 const userData = {
                     clerkId: data.id,
-                    email: data.email_addresses?.[0]?.email_address || "",
+                    email,
                     photo: data.image_url,
                     firstName: data.first_name || '',
                     lastName: data.last_name || '',
