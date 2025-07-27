@@ -13,8 +13,8 @@ app.use(cors({
   origin: 'http://localhost:5173', 
   credentials: true 
 }));
-app.use('/api/user/webhooks', userRouter);
-app.use(express.json());
+
+app.post('/api/user/webhooks', express.raw({ type: 'application/json' }), clerkWebhooks);app.use(express.json());
 
 app.use('/api/user',userRouter);
 app.use('/api/image',imageRouter);
