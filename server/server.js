@@ -12,8 +12,8 @@ const PORT =process.env.PORT ||4000;
 const app=express();
 await connectDB(); 
 app.use(cors({
-  origin: 'https://bg-removal-omega-two.vercel.app', 
-  credentials: true 
+  origin: ['http://localhost:5173', 'https://bg-removal-front-omega.vercel.app'],
+  credentials: true
 }));
 
 
