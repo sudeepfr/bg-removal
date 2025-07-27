@@ -11,10 +11,7 @@ import bodyParser from 'body-parser';
 const PORT =process.env.PORT ||4000;
 const app=express();
 await connectDB(); 
-app.use(cors({
-  origin: 'http://localhost:5173', 
-  credentials: true 
-}));
+app.use(cors());
 
 
 app.use(express.json());
