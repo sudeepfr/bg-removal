@@ -3,6 +3,7 @@ import { Webhook } from "svix";
 import userModel from "../models/userModel.js";
 import razorpay from 'razorpay';
 import transactionModel from "../models/transactionModel.js";
+import { clerkClient } from '@clerk/clerk-sdk-node';
 const clerkWebhooks = async (req, res) => {
     try {
         console.log("Webhook hit!", req.headers);
@@ -24,8 +25,13 @@ const clerkWebhooks = async (req, res) => {
         switch (type) {
             case "user.created": {
                 console.log("📦 Full user.created payload:", JSON.stringify(data, null, 2));
-               const email = data.email_addresses[0].email_address||" ";
-               console.log(email);
+
+                const clerkUser = await clerkClient.users.getUser(data.id);
+                const email = clerkUser.emailAddresses?.[0]?.emailAddress;
+                const photo = clerkUser.imageUrl;
+                const firstName = clerkUser.firstName;
+                const lastName = clerkUser.lastName;
+
                 if (!email) {
                     console.error(" Email not found in Clerk webhook payload");
                     return res.status(400).json({
@@ -36,24 +42,20 @@ const clerkWebhooks = async (req, res) => {
 
 
                 const userData = {
-                    clerkId: data.id,
+                    clerkId: clerkUser.id,
                     email,
                     photo: data.image_url,
                     firstName: data.first_name || '',
                     lastName: data.last_name || '',
                 };
-                const existingUser = await userModel.findOne({ clerkId: data.id });
-                if (existingUser) {
-                    console.log("User already exists:", existingUser.email);
-                    return res.status(200).json({ success: true, message: "User already exists" });
-                }
-                try {
+                const existingUser = await userModel.findOne({ clerkId: clerkUser.id });
+                if (!existingUser) {
                     await userModel.create(userData);
-                    console.log(" User created successfully");
-                    return res.json({ success: true, user: userData })
-
-                } catch (err) {
-                    console.error(" Error creating user:", err.message);
+                    res.json({success:true ,message:"user creaetd succcessfuly"})
+                }
+                else {
+                     console.log("user already exist")
+                     res.json({success:false,message:"user already exits"});
                 }
                 break;
 
