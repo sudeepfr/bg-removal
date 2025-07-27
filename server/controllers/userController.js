@@ -3,86 +3,8 @@ import { Webhook } from "svix";
 import userModel from "../models/userModel.js";
 import razorpay from 'razorpay';
 import transactionModel from "../models/transactionModel.js";
-import { clerkClient } from '@clerk/clerk-sdk-node';
 const clerkWebhooks = async (req, res) => {
-    try {
-        console.log("Webhook hit!", req.headers);
-        //create svix instance with clerk webhook secret
-        const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET)
-
-        const payload = req.body
-
-        const headers = {
-            "svix-id": req.headers["svix-id"],
-            "svix-timestamp": req.headers["svix-timestamp"],
-            "svix-signature": req.headers["svix-signature"]
-        };
-        const evt = whook.verify(payload, headers);
-
-        const { data, type } = evt;
-        console.log(" Webhook type:", type);
-
-        switch (type) {
-            case "user.created": {
-                console.log("📦 Full user.created payload:", JSON.stringify(data, null, 2));
-
-                const clerkUser = await clerkClient.users.getUser(data.id);
-                const email = clerkUser.emailAddresses?.[0]?.emailAddress;
-                const photo = clerkUser.imageUrl;
-                const firstName = clerkUser.firstName;
-                const lastName = clerkUser.lastName;
-
-                if (!email) {
-                    console.error(" Email not found in Clerk webhook payload");
-                    return res.status(400).json({
-                        success: false,
-                        message: "Email address not found in webhook payload",
-                    });
-                }
-
-
-                const userData = {
-                    clerkId: clerkUser.id,
-                    email,
-                    photo: data.image_url,
-                    firstName: data.first_name || '',
-                    lastName: data.last_name || '',
-                };
-                const existingUser = await userModel.findOne({ clerkId: clerkUser.id });
-                if (!existingUser) {
-                    await userModel.create(userData);
-                    res.json({success:true ,message:"user creaetd succcessfuly"})
-                }
-                else {
-                     console.log("user already exist")
-                     res.json({success:false,message:"user already exits"});
-                }
-                break;
-
-            }
-            case "user.updated": {
-                const userData = {
-                    email: data.email_addresses?.[0]?.email_address || "",
-                    photo: data.image_url,
-                    firstName: data.first_name || '',
-                    lastName: data.last_name || '',
-                };
-                await userModel.findOneAndUpdate({ clerkId: data.id }, userData);
-                res.json({ success: true, message: "User updated successfuly" });
-
-                break;
-            }
-            case "user.deleted": {
-                await userModel.findOneAndDelete({ clerkId: data.id });
-                res.json({ success: true, message: "User Deleted successfuly" });
-                break;
-            }
-        }
-
-    } catch (error) {
-        console.log(error.message);
-        res.json({ success: false, message: error.message });
-    }
+    
 }
 
 //api controller function to get  the user data
