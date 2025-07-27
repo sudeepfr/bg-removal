@@ -9,7 +9,7 @@ const clerkWebhooks = async (req, res) => {
         //create svix instance with clerk webhook secret
         const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET)
 
-        const payload = req.body.toString();
+        const payload = req.body;
 
         const headers = {
             "svix-id": req.headers["svix-id"],
@@ -17,9 +17,10 @@ const clerkWebhooks = async (req, res) => {
             "svix-signature": req.headers["svix-signature"]
         };
         const evt = whook.verify(payload, headers);
-
+        
         const { data, type } = evt;
-        console.log(" Webhook type:", type);
+        console.log("✅ Webhook type:", type);
+
         switch (type) {
             case "user.created": {
                 const userData = {
@@ -37,7 +38,7 @@ const clerkWebhooks = async (req, res) => {
                 try {
                     await userModel.create(userData);
                     console.log(" User created successfully");
-                  return  res.json({ success: true, user: userData })
+                    return res.json({ success: true, user: userData })
 
                 } catch (err) {
                     console.error(" Error creating user:", err.message);
@@ -166,23 +167,23 @@ const paymentRazorpay = async (req, res) => {
 const verifyRazorpay = async (req, res) => {
     try {
 
-        const {razorpay_order_id}=req.body;
+        const { razorpay_order_id } = req.body;
         console.log(req.body);
-        const orderInfo=await razorpayInstance.orders.fetch(razorpay_order_id);
-        if(orderInfo.status==='paid'){
-             const transactionData=await transactionModel.findById(orderInfo.receipt);
-              if(transactionData.payment){
-                 return res.json({success:false,message:'payment  failed'})
-              }
-              
-              //adding credit in user data
-              const userData=await userModel.findOne({clerkId:transactionData.clerkId})
-              const creditBalance=userData.creditBalance+transactionData.credits;
-              await userModel.findByIdAndUpdate(userData._id,{creditBalance})
-              
-              //making payment true
-              await transactionModel.findByIdAndUpdate(transactionData._id,{payment:true});
-              res.json({success:true,message:"credit Added "})
+        const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id);
+        if (orderInfo.status === 'paid') {
+            const transactionData = await transactionModel.findById(orderInfo.receipt);
+            if (transactionData.payment) {
+                return res.json({ success: false, message: 'payment  failed' })
+            }
+
+            //adding credit in user data
+            const userData = await userModel.findOne({ clerkId: transactionData.clerkId })
+            const creditBalance = userData.creditBalance + transactionData.credits;
+            await userModel.findByIdAndUpdate(userData._id, { creditBalance })
+
+            //making payment true
+            await transactionModel.findByIdAndUpdate(transactionData._id, { payment: true });
+            res.json({ success: true, message: "credit Added " })
         }
 
     } catch (error) {
@@ -190,4 +191,4 @@ const verifyRazorpay = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 }
-export { clerkWebhooks, userCredits, paymentRazorpay ,verifyRazorpay};
+export { clerkWebhooks, userCredits, paymentRazorpay, verifyRazorpay };
