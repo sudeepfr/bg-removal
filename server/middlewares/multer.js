@@ -1,22 +1,17 @@
 import multer from "multer";
-import path from 'path';
-import fs from 'fs';
+import os from 'os';
 
-// creating multer middleware for parsing formdata 
-const uploadDir = 'uploads';
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage=multer.diskStorage({
-    destination: function(req, file, callback) {
-        callback(null, uploadDir);
+// Use the OS temp directory — works both locally and on serverless (Vercel/AWS Lambda)
+// where the filesystem is read-only except for /tmp
+const storage = multer.diskStorage({
+    destination: function (req, file, callback) {
+        callback(null, os.tmpdir());
     },
-    filename:function(req,file,callback){
-        callback(null,`${Date.now()}_${file.originalname}`) 
+    filename: function (req, file, callback) {
+        callback(null, `${Date.now()}_${file.originalname}`);
     }
-})
+});
 
-const upload=multer({storage});
+const upload = multer({ storage });
 
 export default upload;
