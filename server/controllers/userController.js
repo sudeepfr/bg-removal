@@ -41,7 +41,7 @@ const clerkWebhooks = async (req, res) => {
                 res.json({});
                 break;
             }
-             case 'user.delete':{
+             case 'user.deleted':{
                 await userModel.findOneAndDelete({clerkId:data.id})
                 res.json({})
                 break;
@@ -51,7 +51,36 @@ const clerkWebhooks = async (req, res) => {
          }
     }catch(error){
       console.log(error.message);
-      res.json({success:false,message:"error.message"})
+      res.json({success:false,message:error.message})
+    }
+}
+
+// api to sync user from frontend (fallback to webhook for local dev)
+const syncUser = async (req, res) => {
+    try {
+        const clerkId = req.clerkId;
+        const { email, firstName, lastName, photo } = req.body;
+
+        let user = await userModel.findOne({ clerkId });
+        if (!user) {
+            // Create user if they don't exist (webhook may not have fired in local dev)
+            user = await userModel.create({
+                clerkId,
+                email: email || '',
+                firstName: firstName || '',
+                lastName: lastName || '',
+                photo: photo || '',
+            });
+            console.log('User created via sync:', clerkId);
+        } else {
+            // Update profile info in case it changed
+            await userModel.findByIdAndUpdate(user._id, { email, firstName, lastName, photo });
+        }
+
+        res.json({ success: true, credits: user.creditBalance });
+    } catch (error) {
+        console.log(error.message);
+        res.json({ success: false, message: error.message });
     }
 }
 
@@ -61,6 +90,9 @@ const userCredits = async (req, res) => {
         const clerkId = req.clerkId;
         console.log(clerkId);
         const userData = await userModel.findOne({ clerkId })
+        if (!userData) {
+            return res.json({ success: false, message: 'User not found. Please make sure your Clerk webhook is configured correctly.' });
+        }
         res.json({ success: true, credits: userData.creditBalance });
 
     } catch (error) {
@@ -84,7 +116,7 @@ const paymentRazorpay = async (req, res) => {
 
         const userData = await userModel.findOne({ clerkId })
         if (!userData || !planId) {
-            res.json({ success: false, message: "invalid credentials" })
+            return res.json({ success: false, message: "invalid credentials" })
         }
 
         let credits, plan, amount, date
@@ -127,7 +159,7 @@ const paymentRazorpay = async (req, res) => {
 
         const options = {
             amount: amount * 100,
-            currency: process.env.currency,
+            currency: process.env.CURRENCY,
             receipt: newTransaction._id.toString(),
         }
 
@@ -162,6 +194,9 @@ const verifyRazorpay = async (req, res) => {
 
             //adding credit in user data
             const userData = await userModel.findOne({ clerkId: transactionData.clerkId })
+            if (!userData) {
+                return res.json({ success: false, message: 'User not found' });
+            }
             const creditBalance = userData.creditBalance + transactionData.credits;
             await userModel.findByIdAndUpdate(userData._id, { creditBalance })
 
@@ -175,4 +210,4 @@ const verifyRazorpay = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 }
-export { clerkWebhooks, userCredits, paymentRazorpay, verifyRazorpay };
+export { clerkWebhooks, userCredits, paymentRazorpay, verifyRazorpay, syncUser };

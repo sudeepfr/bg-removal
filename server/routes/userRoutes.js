@@ -1,12 +1,13 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 
-import { clerkWebhooks, paymentRazorpay, userCredits, verifyRazorpay } from '../controllers/userController.js';
+import { clerkWebhooks, paymentRazorpay, syncUser, userCredits, verifyRazorpay } from '../controllers/userController.js';
 import authUser from '../middlewares/auth.js';
 
 const userRouter=express.Router();
 
 // userRouter.post('/webhooks',clerkWebhooks);
+userRouter.post('/sync', authUser, syncUser);
 userRouter.get('/credits',authUser,userCredits);
 userRouter.post('/pay-razor',authUser,paymentRazorpay)
 userRouter.post('/verify-razor',verifyRazorpay);

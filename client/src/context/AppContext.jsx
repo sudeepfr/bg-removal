@@ -1,5 +1,5 @@
 import { useAuth, useClerk, useUser } from "@clerk/clerk-react";
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import axios from 'axios';
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -14,10 +14,35 @@ const AppContextProvider = (props) => {
     const backendUrl=import.meta.env.VITE_BACKEND_URL;
      const navigate=useNavigate();
     const { getToken } = useAuth();
-    const {isSignedIn}=useUser();
+    const {isSignedIn, user}=useUser();
     const {openSignIn}=useClerk()
     
- 
+    // Sync Clerk user into MongoDB (works without webhook - perfect for local dev)
+    const syncUserToDB = async () => {
+        try {
+            const token = await getToken();
+            const { data } = await axios.post(backendUrl + '/api/user/sync', {
+                email: user.primaryEmailAddress?.emailAddress || '',
+                firstName: user.firstName || '',
+                lastName: user.lastName || '',
+                photo: user.imageUrl || '',
+            }, { headers: { token } });
+
+            if (data.success) {
+                setCredit(data.credits);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    // Whenever the user signs in, sync their data to MongoDB & load credits
+    useEffect(() => {
+        if (isSignedIn && user) {
+            syncUserToDB();
+        }
+    }, [isSignedIn, user]);
+
     const loadCreditsData=async()=>{
          try{
             const token=await getToken();
@@ -79,4 +104,4 @@ const AppContextProvider = (props) => {
     )
 }
 
-export default AppContextProvider;
+export default AppContextProvider;
