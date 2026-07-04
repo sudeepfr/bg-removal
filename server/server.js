@@ -15,7 +15,17 @@ const PORT =process.env.PORT ||4000;
 const app=express();
 await connectDB(); 
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://bg-removal-front-omega.vercel.app'],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    // Allow localhost (any port) and all Vercel deployments
+    const allowed = /^http:\/\/localhost(:\d+)?$|^https:\/\/.*\.vercel\.app$/;
+    if (allowed.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS: ' + origin));
+    }
+  },
   credentials: true
 }));
 app.post('/api/user/webhooks', bodyParser.raw({ type: 'application/json' }), clerkWebhooks);
